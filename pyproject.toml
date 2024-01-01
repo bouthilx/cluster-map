@@ -1,0 +1,47 @@
+[tool.poetry]
+name = "cluster_map"
+version = "0.1.0"
+description = ""
+authors = ["Xavier Bouthillier"]
+readme = "README.md"
+packages = [{include = 'cluster_map'}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+numpy = ">= 1.24.0"
+python-hostlist = "^1.23.0"
+tqdm = "^4.64.1"
+simple-parsing = "^0.1.0"
+pillow = "^10.1.0"
+
+[tool.poetry.group.dev.dependencies]
+black = ">= 22.12.0"
+pylint = ">= 2.15.10"
+isort = ">= 5.11.4"
+mypy = ">= 0.991"
+pytest = ">= 7.2.1"
+pytest-regressions = "^2.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pylint]
+ignore-paths = []
+disable = [
+    "no-self-argument",  # Pydantic validators don't have one
+    "too-few-public-methods",  # Triggered on Pydantic models
+    "import-outside-toplevel",  # These imports are useful to reduce loading times
+    "too-many-arguments",
+    "too-many-locals",
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "invalid-name",
+    "no-else-return",  # Bad rule IMO (- OB)
+    "line-too-long"  # Black takes care of line length.
+]
+extension-pkg-whitelist = "pydantic"
+
+[tool.isort]
+profile = "black"
