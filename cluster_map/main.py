@@ -28,49 +28,126 @@ BoundingBox(
 ).image.save("bounding_box.png")
 
 
-gpus = ComposedObject(
-    name="gpus",
-    layout=Layout(Size(1, 4), Size(400, 1000), padding=padding),
-    objects=[
-        GPU(name=f"gpu{i}", image_path=os.path.join(image_folder, "v100.jpg"))
-        for i in range(4)
-    ],
-)
-gpus.image.save("gpus.png")
-cpus = ComposedObject(
-    name="cpus",
-    layout=Layout(Size(1, 2), Size(600, 1000), padding=padding),
-    objects=[
-        CPU(name=f"cpu{i}", image_path=os.path.join(image_folder, "cpu.png"))
-        for i in range(2)
-    ],
-)
-cpus.image.save("cpus.png")
-
-ram = ComposedObject(
-    name="ram",
-    layout=Layout(Size(2, 8), Size(100, 800)),
-    objects=[
-        RAM(name=f"ram{i}", image_path=os.path.join(image_folder, "ram.png"))
-        for i in range(8 * 2)
-    ],
-)
-ram.image.save("rams.png")
-
 RAM(name="ram", image_path=os.path.join(image_folder, "ram.png")).image.save("ram.png")
 
-BoundingBox(
-    name="nodebbox",
-    object=Node(
-        name="node1",
-        layout=Layout(Size(3, 1), Size(1200, 1000)),
-        gpus=gpus,
-        cpus=cpus,
-        ram=ram,
-    ),
-    size=Size(1200, 1000),
-    padding=padding,
-).image.save("node.png", transparancy=0)
+
+def build_huge_dgx_node():
+    gpus = ComposedObject(
+        name="gpus",
+        layout=Layout(Size(1, 8), Size(600, 2000), padding=padding),
+        objects=[
+            GPU(name=f"gpu{i}", image_path=os.path.join(image_folder, "a100_sxm.png"))
+            for i in range(8)
+        ],
+    )
+    cpus = ComposedObject(
+        name="cpus",
+        layout=Layout(Size(1, 2), Size(400, 2000), padding=padding),
+        objects=[
+            CPU(
+                name=f"cpu{i}", image_path=os.path.join(image_folder, "cpu.png")
+            ).rotate(90)
+            for i in range(2)
+        ],
+    )
+
+    ram = ComposedObject(
+        name="ram",
+        layout=Layout(Size(4, 16), Size(1600, 2000)),
+        objects=[
+            RAM(
+                name=f"ram{i}", image_path=os.path.join(image_folder, "ram.png")
+            ).rotate(90)
+            for i in range(8 * 2 * 4)
+        ],
+    )
+
+    cpu_and_ram = ComposedObject(
+        name="cpu_and_ram",
+        layout=Layout(Size(2, 1), Size(2200, 2000), padding=padding),
+        objects=[cpus, ram],
+    )
+    node = ComposedObject(
+        name="node",
+        layout=Layout(Size(2, 1), Size(2800, 2000), padding=padding),
+        objects=[gpus, cpu_and_ram],
+    )
+
+    node = BoundingBox(
+        name="nodebbox",
+        object=node,
+        size=Size(1200, 1000),
+        padding=padding,
+    )
+    node.image.save("node_dgx.png", transparancy=0)
+
+    return node
+
+
+huge_dgx = build_huge_dgx_node()
+
+
+def build_4_gpu_node():
+    gpus = ComposedObject(
+        name="gpus",
+        layout=Layout(Size(1, 4), Size(600, 1000), padding=padding),
+        objects=[
+            GPU(name=f"gpu{i}", image_path=os.path.join(image_folder, "v100.png"))
+            for i in range(4)
+        ],
+    )
+    cpus = ComposedObject(
+        name="cpus",
+        layout=Layout(Size(1, 2), Size(400, 1000), padding=padding),
+        objects=[
+            CPU(
+                name=f"cpu{i}", image_path=os.path.join(image_folder, "cpu.png")
+            ).rotate(90)
+            for i in range(2)
+        ],
+    )
+
+    ram = ComposedObject(
+        name="ram",
+        layout=Layout(Size(2, 8), Size(800, 1000)),
+        objects=[
+            RAM(
+                name=f"ram{i}", image_path=os.path.join(image_folder, "ram.png")
+            ).rotate(90)
+            for i in range(8 * 2)
+        ],
+    )
+
+    cpu_and_ram = ComposedObject(
+        name="cpu_and_ram",
+        layout=Layout(Size(2, 1), Size(1200, 1000), padding=padding),
+        objects=[cpus, ram],
+    )
+    node = ComposedObject(
+        name="node",
+        layout=Layout(Size(2, 1), Size(1800, 1000)),
+        objects=[gpus, cpu_and_ram],
+    )
+
+    node = BoundingBox(
+        name="nodebbox",
+        object=node,
+        size=Size(1200, 1000),
+        padding=padding,
+    )
+    node.image.save("node.png", transparancy=0)
+
+    return node
+
+
+gpu_node = build_4_gpu_node()
+
+ComposedObject(
+    name="cluster",
+    layout=Layout(Size(1, 2), Size(1200, 2000), padding=padding),
+    objects=[huge_dgx, gpu_node],
+).image.save("cluster.png")
+
 
 import sys
 

@@ -2,8 +2,12 @@ import functools
 import io
 import os
 
+from PIL import ImageDraw, ImageFont
+
 from cluster_map.architecture import (
+    BoundingBox,
     ComposedObject,
+    FlexibleColumnsLayout,
     Layout,
     Object,
     Padding,
@@ -139,3 +143,62 @@ def test_centered_with_padding(image_regression):
     image_regression.check(
         to_bytes(ComposedObject(name="center", layout=layout, objects=objects))
     )
+
+
+class TestFlexibleColumnLayout:
+    def test_flexible_column_indices(self, image_regression):
+        layout = FlexibleColumnsLayout(
+            grid=Size(4, 3),
+            nrows=(3, 2, 1, 3),
+            padding=Padding(2, 2, 2, 2),
+            valign="top",
+            halign="left",
+        )
+
+        objects = [
+            BoundingBox(
+                name=f"box{i}",
+                object=Rectangle(name=str(i)),
+                padding=Padding(5, 5, 5, 5),
+                width=2,
+            )
+            for i in range(9)
+        ]
+        for i, obj in enumerate(objects):
+            obj.object.size = Size(50, 50)
+        layout.adjust_cell_sizes(objects)
+
+        image_regression.check(
+            to_bytes(ComposedObject(name="top_left", layout=layout, objects=objects))
+        )
+
+    def test_centered_flexible_column_indices(self, image_regression):
+        layout = FlexibleColumnsLayout(
+            grid=Size(4, 3),
+            nrows=(3, 2, 1, 3),
+            padding=Padding(2, 2, 2, 2),
+            valign="center",
+            halign="center",
+        )
+
+        objects = [
+            BoundingBox(
+                name=f"box{i}",
+                object=Rectangle(name=str(i)),
+                padding=Padding(5, 5, 5, 5),
+                width=2,
+            )
+            for i in range(9)
+        ]
+        for i, obj in enumerate(objects):
+            obj.object.size = Size(50, 50)
+        layout.adjust_cell_sizes(objects)
+
+        image_regression.check(
+            to_bytes(ComposedObject(name="center", layout=layout, objects=objects))
+        )
+
+        # TODO: Debug this layout...
+        # Problem is most likely because of padding which is applied proportionally in base Layout
+
+    # instead of directly.
